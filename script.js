@@ -56,9 +56,17 @@ function preprocessImage(imgData) {
         grayscale.push(255 - imgData.data[i]); // Инверсия цвета
     }
 
-    const resized = tf.tensor(grayscale, [280, 280]).resizeBilinear([28, 28]);
-    const normalized = resized.div(255.0).reshape([1, 28, 28, 1]);
-    return normalized;
+    // Создаем тензор размером [280, 280] и добавляем канал (1)
+    let tensor = tf.tensor(grayscale, [280, 280], 'float32').expandDims(-1);
+
+    // Масштабируем до [28, 28]
+    tensor = tf.image.resizeBilinear(tensor, [28, 28]);
+
+    // Нормализуем значения пикселей (0-1)
+    tensor = tensor.div(255.0);
+
+    // Добавляем батч (размерность [1, 28, 28, 1])
+    return tensor.expandDims(0);
 }
 
 // Загрузка модели при запуске
